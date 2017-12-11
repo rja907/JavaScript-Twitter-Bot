@@ -1,29 +1,47 @@
 console.log('the bot is starting!');
 var Twit = require('twit');
 var config = require('./config');
+var fs = require('fs');
 var T = new Twit(config);
-
 var stream = T.stream('user');
+var exec = require('child_process').exec;
+
+//======When I want the Bot to reply=======================
+stream.on('tweet', tweetEvent);
+function tweetEvent(eventMsg) {
+  var replyto = eventMsg.in_reply_to_screen_name;
+  var text = eventMsg.text;
+  var from = eventMsg.user.screen_name;
+  if (replyto === 'JS_Is_Life') {
+    var newT = '@' + from + '! Thanks for Tweeting at me! #JS_Is_Life';
+    tweetReply(newT);
+  }
+  function tweetReply(txt) {
+    var tweet = {
+      status: txt
+    };
+
+    T.post('statuses/update', tweet, tweeted);
+
+    function tweeted(err, data, response) {
+      if (err) {
+        console.log('Something went wrong');
+      } else {
+        console.log('It worked!');
+      }
+    }
+  }
+}
+
+//======When I want the Bot to reply ends==================
+
+//======When someone follows my account====================
 stream.on('follow', followed);
 function followed(eventMsg) {
   var name = eventMsg.source.name;
   var screenName = eventMsg.source.screen_name;
   tweetFollow('.@' + screenName + ' kudos! #JSIsLife');
 }
-
-// var params = {
-//   q: 'javascript',
-//   count: 2
-// };
-//
-// T.get('search/tweets', params, getData);
-//
-// function getData(err, data, response) {
-//   var tweets = data.statuses;
-//   for (var i = 0; i < tweets.length; i++) {
-//     console.log(tweets[i].text);
-//   }
-// }
 
 function tweetFollow(txt) {
   var tweet = {
@@ -40,7 +58,41 @@ function tweetFollow(txt) {
     }
   }
 }
+//======When someone follows my account ends===============
 
+//======When I want to post an image using Processing======
+function tweetImage() {
+  var cmd = 'processing-java --sketch=`pwd`/images --run';
+  exec(cmd, processing);
+  function processing() {
+    var filename = 'images/output.png';
+    var params = {
+      encoding: 'base64'
+    };
+    var b64content = fs.readFileSync(filename, params);
+    T.post('media/upload', { media_data: b64content }, uploaded);
+    function uploaded(err, data, response) {
+      var id = data.media_id_string;
+      var tweet = {
+        status: '#JSIsLife',
+        media_ids: [id]
+      };
+      T.post('statuses/update', tweet, tweeted);
+    }
+    function tweeted(err, data, response) {
+      if (err) {
+        console.log('Something went wrong');
+      } else {
+        console.log('It worked! Image Tweeted!');
+      }
+    }
+  }
+}
+
+//tweetImage();
+//======When I want to post an image using Processing ends======
+
+//======When I want to tweet on javascript stuff================
 function tweetIt() {
   var jsArray = [
     'npm i	 use  Alias for npm install',
@@ -87,6 +139,7 @@ function tweetIt() {
     'a1[0]  use  Access first element of array a1',
     'Variables declared with const keyword cannot be reassigned, while let and var can.'
   ];
+
   var randomizer = Math.floor(Math.random() * 30);
 
   var tweet = {
@@ -103,5 +156,19 @@ function tweetIt() {
     }
   }
 }
+setInterval(tweetIt, 1000 * 30);
+//======When I want to tweet on javascript stuff ends===========
 
-//setInterval(tweetIt, 1000 * 30);
+// var params = {
+//   q: 'javascript',
+//   count: 2
+// };
+//
+// T.get('search/tweets', params, getData);
+//
+// function getData(err, data, response) {
+//   var tweets = data.statuses;
+//   for (var i = 0; i < tweets.length; i++) {
+//     console.log(tweets[i].text);
+//   }
+// }
