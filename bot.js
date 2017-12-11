@@ -89,7 +89,7 @@ function tweetImage() {
   }
 }
 
-//tweetImage();
+tweetImage();
 //======When I want to post an image using Processing ends======
 
 //======When I want to tweet on javascript stuff================
@@ -156,7 +156,7 @@ function tweetIt() {
     }
   }
 }
-setInterval(tweetIt, 1000 * 30);
+//setInterval(tweetIt, 1000 * 30);
 //======When I want to tweet on javascript stuff ends===========
 
 // var params = {
